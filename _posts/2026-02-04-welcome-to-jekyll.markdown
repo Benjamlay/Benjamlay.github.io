@@ -7,6 +7,8 @@ categories: jekyll update
 
 # Building an OpenGL 3D Scene
 
+![](/images/FirstImage.png)
+
 This project was developed as a key component of my curriculum to demonstrate a foundational understanding of modern real-time rendering. My goal was simple but challenging: **to use C++ and OpenGL to move beyond basic geometry and build a photorealistic 3D scene**.
 
 This post isn't just a technical breakdown, it’s my personal journey of going from rendering a simple triangle to creating a photorealistic scene. We’ll explore how core concepts like **Deferred Shading**, **PBR** (Physically Based Rendering), and **SSAO** come together to transform raw geometry into a complex, beautifully lit environment, all while learning the ins and outs of the GPU.
@@ -130,7 +132,7 @@ The process involves three main steps:
 
 ---
 
-## 📐 SSAO (Screen Space Ambient Occlusion)
+## SSAO (Screen Space Ambient Occlusion)
 
 **SSAO** is a crucial technique for enhancing the visual realism and depth of a 3D scene. It simulates subtle, non-directional shadows that occur where objects are close to each other (e.g., in corners, crevices, or under edges).
 
@@ -163,4 +165,22 @@ The camera's view is shaped like a pyramid with the top cut off, known as the **
     * **Outside:** If the object is outside the frustum, it is ignored (culled) completely.
     * **Inside:** If it is inside or touching the frustum, it is sent to the rendering pipeline.
 
+
+I implemented a **Sphere-Plane intersection test**. It iterates through the 6 planes of the camera frustum. If the sphere is completely behind any single plane, it is invisible.
+
+```cpp
+bool Frustum::IsSphereVisible(const glm::vec3& center, float radius) const 
+{
+    for (const auto& plane : planes_) 
+    {
+        // Calculate the signed distance from the sphere center to the plane
+        if (glm::dot(plane.normal, center) + plane.distance < -radius)
+        {
+            // The sphere is completely behind this plane -> Cull it!
+            return false;
+        }
+    }
+    return true;
+}
+```
 > This technique ensures that the GPU only processes what the player can actually see, resulting in a significant performance boost for complex scenes.
