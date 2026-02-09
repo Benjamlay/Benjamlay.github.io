@@ -7,7 +7,7 @@ categories: jekyll update
 
 # Building an OpenGL 3D Scene
 
-![first image](/images/FirstImage.png)
+![first image](/images/firstimage.png)
 
 This project was developed as a key component of my curriculum to demonstrate a foundational understanding of modern real-time rendering. My goal was simple but challenging: **to use C++ and OpenGL to move beyond basic geometry and build a photorealistic 3D scene**.
 
@@ -183,4 +183,106 @@ bool Frustum::IsSphereVisible(const glm::vec3& center, float radius) const
     return true;
 }
 ```
+
 > This technique ensures that the GPU only processes what the player can actually see, resulting in a significant performance boost for complex scenes.
+
+---
+
+## GPU Instancing
+
+Rendering a few spheres is trivial, but rendering thousands of them individually using a standard loop creates a massive **CPU bottleneck**. The driver spends more time "telling" the GPU to draw than the GPU actually spends drawing.
+
+To solve this, I implemented **Hardware Instancing**.
+
+### 💡 How it works
+
+Instead of issuing thousands of draw calls (e.g., `glDrawArrays`), we issue a **single draw call** (`glDrawElementsInstanced`) to render the same geometry multiple times.
+
+1.  **Shared Geometry:** We send the sphere mesh data to the GPU memory once.
+2.  **Per-Instance Data:** We create a separate buffer (VBO) containing a list of **Model Matrices** (transformations) for every single sphere.
+3.  **The Attribute Divisor:** By using `glVertexAttribDivisor`, we tell OpenGL to advance this matrix attribute **once per instance**, rather than once per vertex.
+
+
+In the shader, the transformation matrix is no longer a `uniform`, but an input `attribute`. This allows the GPU to process thousands of spheres in parallel with unique positions.
+
+```glsl
+layout (location = 0) in vec3 aPos;      // Standard vertex data
+layout (location = 3) in mat4 aInstanceMatrix; // Per-instance data!
+
+uniform mat4 projection;
+uniform mat4 view;
+
+
+void main()
+{
+    // We use the instance matrix directly from the attribute
+    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0); 
+}
+```
+
+### The Draw Call
+
+Finally, instead of a loop calling `glDrawElements` thousands of times, the C++ side is reduced to a single, powerful command:
+
+```cpp
+// Render the mesh 'instanceCount' times instantly
+glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceCount);
+```
+
+
+---
+
+## Framebuffer & Gamma Correction
+
+To apply global effects like Bloom or Color Grading, rendering directly to the window isn't enough. Instead, the entire scene is rendered into an off-screen container called a **Framebuffer Object (FBO)**.
+
+### 💡 How it works
+
+1.  **Off-Screen Rendering:** The scene is drawn into a texture attached to the FBO.
+2.  **Screen Quad:** We bind the default framebuffer (the screen) and draw a simple rectangle (a quad) that covers the entire view.
+3.  **Final Shader:** We map the FBO texture onto this quad. This is where the final pixel math happens.
+
+### Gamma Correction
+
+Since lighting calculations in PBR are done in **Linear Space** (physically correct), but monitors display colors in **sRGB Space** (non-linear), the raw image looks dark and washed out.
+
+We must apply **Gamma Correction** at the very end of the pipeline to display colors correctly:
+
+```glsl
+void main()
+{
+    vec3 color = texture(screenTexture, TexCoords).rgb;
+
+    // 1. Tone Mapping (Optional, e.g., Reinhard or Exposure)
+    color = vec3(1.0) - exp(-color * exposure);
+
+    // 2. Gamma Correction
+    // We raise the color to the power of (1.0 / 2.2) to convert linear -> sRGB
+    color = pow(color, vec3(1.0 / 2.2));
+
+    FragColor = vec4(color, 1.0);
+}
+```
+
+| Before gamma correction | After gamma correction |
+|:---:|:---:|
+| ![bloomMap](/images/beforegammacorrection.png) | ![bloomEffect](/images/aftergammacorrection.png) |
+
+---
+
+---
+
+## Conclusion
+
+This project was a unique opportunity to step out of my comfort zone. It immersed me in a level of technical depth and mathematical rigor that goes beyond what I usually work on.
+
+I went from rendering a simple triangle to managing a full **Deferred Rendering pipeline** capable of handling complex lighting, shadows, and post-processing effects at 60 FPS.
+
+### Future Improvements
+Graphics programming is an endless pit of optimization and new techniques. There are several areas that would be interesting to explore:
+
+* **Vulkan API:** Moving from OpenGL to Vulkan would be a fascinating challenge to understand how modern, low-level APIs handle explicit memory management and synchronization.
+* **Ray Tracing:** Implementing basic ray-traced shadows or reflections (Hybrid Rendering) to push realism further.
+
+Thank you for reading! If you are interested in the code, feel free to check out the repository on my <a href="https://github.com/SAE-Geneve/compgraphsample-Benjamlay" target="_blank">GitHub</a>.
+
