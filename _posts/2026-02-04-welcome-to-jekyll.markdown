@@ -7,7 +7,7 @@ categories: jekyll update
 
 # Building an OpenGL 3D Scene
 
-![first image](/images/firstimage.png)
+![first image](/images/FirstImage.png)
 
 This project was developed as a key component of my curriculum to demonstrate a foundational understanding of modern real-time rendering. My goal was simple but challenging: **to use C++ and OpenGL to move beyond basic geometry and build a photorealistic 3D scene**.
 
