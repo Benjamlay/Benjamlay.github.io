@@ -7,7 +7,7 @@ categories: jekyll update
 
 # Building an OpenGL 3D Scene
 
-![](/images/FirstImage.png)
+![first image](/images/FirstImage.png)
 
 This project was developed as a key component of my curriculum to demonstrate a foundational understanding of modern real-time rendering. My goal was simple but challenging: **to use C++ and OpenGL to move beyond basic geometry and build a photorealistic 3D scene**.
 
@@ -28,7 +28,7 @@ It separates the geometry calculation from the lighting calculation.
 
 | Base Color | Normal Map | Position Map |
 |:---:|:---:|:---:|
-| ![](/images/BaseColorMapPicture.png) | ![](/images/NormalMapPicture.jpg) | ![](/images/PositionMapPicture.jpg) |
+| ![base color](/images/BaseColorMapPicture.png) | ![normal map](/images/NormalMapPicture.jpg) | ![position map](/images/PositionMapPicture.jpg) |
 | *Base Color map* | *Normal map* | *Position map* |
 
 ---
@@ -80,7 +80,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir, samp
 
 | Light 1 POV | Light 2 POV |
 |:---:|:---:|
-| ![](/images/shadowmapPicture.jpg) | ![](/images/shadowmapPicture2.jpg) |
+| ![shadowmap](/images/shadowmapPicture.jpg) | ![shadowmap2](/images/shadowmapPicture2.jpg) |
 | *First shadow map* | *Second shadow map* |
 
 ---
@@ -103,12 +103,12 @@ Instead of a simple ambient color, a **360° environment map** (often an HDR sky
 
 | The Sphere | The Skybox |
 |:---:|:---:|
-| ![](/images/sphereMetallic.png) | ![](/images/buildingFromSkybox.png) |
+| ![sphere](/images/sphereMetallic.png) | ![skybox](/images/buildingFromSkybox.png) |
 | *Metallic Reflection* | *Source Environment* |
 
 | Irradiance Map | Pre-Filter Map |
 |:---:|:---:|
-| ![](/images/IrradianceMapPicture.jpg) | ![](/images/PreFilterMapPicture.jpg) |
+| ![irradianceMap](/images/IrradianceMapPicture.jpg) | ![PrefilterMap](/images/PreFilterMapPicture.jpg) |
 | *Diffuse Component* | *Specular Component* |
 
 ---
@@ -127,7 +127,7 @@ The process involves three main steps:
 
 | Bloom Map | Final Result |
 |:---:|:---:|
-| ![](/images/BloomMapPicture.jpg) | ![](/images/gifBloomEffect1.gif) |
+| ![bloomMap](/images/BloomMapPicture.jpg) | ![bloomEffect](/images/gifBloomEffect1.gif) |
 | *Extracted Glow* | *Final Bloom Effect* |
 
 ---
