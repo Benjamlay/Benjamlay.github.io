@@ -25,15 +25,15 @@ To achieve this, I built the game entirely around a strict **Model-View-Controll
 
 ### The Model: The Absolute Truth
 The Model is the pure, mathematical simulation of the game. It knows nothing about graphics, pixels, or screen refresh rates. 
-* **Fixed-Point Math:** Floating-point numbers are calculated slightly differently depending on the CPU. To guarantee determinism, the `SimpleModel` relies entirely on fixed-point math and custom trigonometric look-up tables for movement and collisions[cite: 1].
-* **Easily Cloneable:** The Model contains the absolute minimum required data: positions, rotations, velocities, hit timers, and cooldowns[cite: 1]. Because it is purely data-driven, the entire game state can be instantly copied and overwritten (rolled back) without memory leaks or heavy processing[cite: 1].
+* **Fixed-Point Math:** Floating-point numbers are calculated slightly differently depending on the CPU. To guarantee determinism, the `SimpleModel` relies entirely on fixed-point math and custom trigonometric look-up tables for movement and collisions.
+* **Easily Cloneable:** The Model contains the absolute minimum required data: positions, rotations, velocities, hit timers, and cooldowns. Because it is purely data-driven, the entire game state can be instantly copied and overwritten (rolled back) without memory leaks or heavy processing.
 
 ### The View: The "Dumb" Renderer
 The View's only job is to look at the Model and draw it. It is strictly read-only.
-* **Visual Independence:** This separation is crucial for visual effects. For instance, in our `SimpleView`, the fading tracks left by a tank or the alpha transparency of an explosion are calculated locally using the standard visual delta-time[cite: 4]. Because these visual flourishes don't affect gameplay, the Model doesn't need to simulate or rewind them[cite: 4]. If visual logic leaked into the Model, rewinding the game would cause chaos.
+* **Visual Independence:** This separation is crucial for visual effects. For instance, in our `SimpleView`, the fading tracks left by a tank or the alpha transparency of an explosion are calculated locally using the standard visual delta-time. Because these visual flourishes don't affect gameplay, the Model doesn't need to simulate or rewind them. If visual logic leaked into the Model, rewinding the game would cause chaos.
 
 ### The Controller: The Conductor
-The Controller sits between the network, the local inputs, the Model, and the View. It is the brain that orchestrates the simulation, deciding when to predict forward and when to rewind time[cite: 3].
+The Controller sits between the network, the local inputs, the Model, and the View. It is the brain that orchestrates the simulation, deciding when to predict forward and when to rewind time.
 
 ---
 
@@ -42,17 +42,17 @@ The Controller sits between the network, the local inputs, the Model, and the Vi
 With a strictly deterministic MVC foundation in place, we can actually implement the rollback logic. Our `SimpleController` handles a complex dance between the past and the present.
 
 ### Local Prediction
-When you press a button to shoot or move, you don't want to wait for the server to give you permission. The Controller immediately applies your input to your local Model for the current frame[cite: 3]. This is why rollback feels just like playing locally. 
+When you press a button to shoot or move, you don't want to wait for the server to give you permission. The Controller immediately applies your input to your local Model for the current frame. This is why rollback feels just like playing locally. 
 
 ### The "Confirmed Frame"
-Because of ping, inputs from your opponents will always arrive late[cite: 3]. This introduces the concept of the **Confirmed Frame**. 
-The Confirmed Frame is the most recent frame in the past where your client has successfully received the inputs from *all* players in the match[cite: 3]. Everything before this frame is immutable reality; everything after it is a prediction.
+Because of ping, inputs from your opponents will always arrive late. This introduces the concept of the **Confirmed Frame**. 
+The Confirmed Frame is the most recent frame in the past where your client has successfully received the inputs from *all* players in the match. Everything before this frame is immutable reality; everything after it is a prediction.
 
 ### Rewind and Resimulate
-When an opponent's delayed input arrives over the network via our Photon client, the Controller realizes its prediction was wrong[cite: 2, 3]. Here is the rollback sequence that happens in a fraction of a millisecond:
-1. **Flag as Dirty:** The input manager detects a change in the past[cite: 3].
-2. **Rewind:** The Controller instantly loads the game state from the last Confirmed Frame[cite: 3].
-3. **Resimulate:** The Controller fast-forwards the simulation back to the present frame, applying the newly received inputs along the way[cite: 3]. 
+When an opponent's delayed input arrives over the network via our Photon client, the Controller realizes its prediction was wrong. Here is the rollback sequence that happens in a fraction of a millisecond:
+1. **Flag as Dirty:** The input manager detects a change in the past.
+2. **Rewind:** The Controller instantly loads the game state from the last Confirmed Frame.
+3. **Resimulate:** The Controller fast-forwards the simulation back to the present frame, applying the newly received inputs along the way. 
 
 Because the Model is lightweight and strictly mathematical, this entire process happens invisibly between two rendered frames.
 
@@ -60,7 +60,7 @@ Because the Model is lightweight and strictly mathematical, this entire process 
 Even with fixed-point math, true determinism is hard. A single variable initialized incorrectly can cause a "desync," where Player 1 and Player 2 are playing two completely different realities.
 
 To prevent silent failures, we use **Checksums**. 
-Every time a frame becomes "Confirmed," our Model calculates an Adler-32 checksum—a digital fingerprint—of the entire game state (combining all player coordinates, rotations, and projectile data into a single number)[cite: 1]. 
+Every time a frame becomes "Confirmed," our Model calculates an Adler-32 checksum—a digital fingerprint—of the entire game state (combining all player coordinates, rotations, and projectile data into a single number). 
 
 Here is how the hash is built in our Model:
 
@@ -93,7 +93,7 @@ common::Checksum<1> SimpleModelManager::checksums() const {
 ```
 
 
-This checksum is sent over the network[cite: 3]. The Controller constantly compares its local checksum for a specific frame against the remote checksum received from the opponent[cite: 3]. If they match, the simulation is perfect. If they differ, the Controller immediately logs a fatal desync warning, letting us know our determinism has a flaw[cite: 3].
+This checksum is sent over the network. The Controller constantly compares its local checksum for a specific frame against the remote checksum received from the opponent. If they match, the simulation is perfect. If they differ, the Controller immediately logs a fatal desync warning, letting us know our determinism has a flaw.
 
 ***
 
