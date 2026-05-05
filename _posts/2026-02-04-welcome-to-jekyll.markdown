@@ -3,7 +3,10 @@ layout: post
 title:  "My OpenGL 3D Scene"
 date:   2026-02-04 14:10:09 +0100
 categories: jekyll update
+
+
 ---
+
 
 # Building an OpenGL 3D Scene
 
